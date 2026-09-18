@@ -1,3 +1,5 @@
+import sqlite3
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -76,12 +78,12 @@ def test_unknown_products(inv):
 def test_sku_is_normalised_and_unique(inv):
     inv.add_product("ab-1", "A", 10, 20)
     assert inv.product_by_sku("AB-1")["sku"] == "AB-1"
-    with pytest.raises(Exception):
+    with pytest.raises(sqlite3.IntegrityError, match="UNIQUE constraint failed: products.sku"):
         inv.add_product("AB-1", "duplicate", 10, 20)
 
 
 def test_negative_prices_are_rejected(inv):
-    with pytest.raises(Exception):
+    with pytest.raises(sqlite3.IntegrityError, match="CHECK constraint failed: cost_price"):
         inv.add_product("X-1", "X", -5, 10)
 
 
@@ -116,14 +118,14 @@ def test_order_validation(shop):
         inv.create_order(999, [(product["product_id"], 1, 1)])
     with pytest.raises(ValueError):
         inv.create_order(supplier["id"], [])
-    with pytest.raises(Exception):
+    with pytest.raises(sqlite3.IntegrityError, match="CHECK constraint failed: quantity"):
         inv.create_order(supplier["id"], [(product["product_id"], 0, 10)])   # quantity must be > 0
 
 
 def test_a_failed_order_line_rolls_the_whole_order_back(shop):
     inv, supplier, product = shop
     before = len(inv.db.query("SELECT id FROM purchase_orders"))
-    with pytest.raises(Exception):
+    with pytest.raises(sqlite3.IntegrityError, match="FOREIGN KEY constraint failed"):
         inv.create_order(supplier["id"], [(product["product_id"], 5, 10), (999999, 5, 10)])
     assert len(inv.db.query("SELECT id FROM purchase_orders")) == before, "no half-written order"
 
