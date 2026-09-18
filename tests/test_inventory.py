@@ -231,3 +231,64 @@ def test_cli(tmp_path, capsys):
     assert main(["--db", db, "valuation"]) == 0
     assert main(["--db", db, "export", str(tmp_path / "stock.csv")]) == 0
     assert (tmp_path / "stock.csv").read_text().startswith("product_id,sku,name")
+
+
+def test_the_demo_leaves_something_to_reorder(seeded):
+    """The reorder report is the point of the tool, so the demo must exercise it.
+
+    Restocks arrive after the supplier's lead time, so an order placed near the
+    end of the period has not landed yet — which is exactly the state a buyer
+    looks at the report to find.
+    """
+    low = seeded.suggest_reorder()
+
+    assert low, "the demo shop has nothing below its reorder point — the reorder report would be empty"
+    for row in low:
+        assert row["on_hand"] <= row["reorder_point"]
+        assert row["suggested_quantity"] > 0
+
+
+def test_the_demo_never_drives_a_line_negative(seeded):
+    for row in seeded.products():
+        assert row["on_hand"] >= 0, f"{row['sku']} went negative"
+
+
+def test_reorder_points_cover_each_supplier_lead_time(seeded):
+    """A reorder point that ignores lead time is a stockout waiting to happen.
+
+    Every line's point must cover what it sells while the supplier is shipping.
+    """
+    from inventory.seed import PRODUCTS
+
+    weekly = {row[0]: row[-1] for row in PRODUCTS}
+    suppliers = {row["id"]: row["lead_time_days"] for row in seeded.suppliers()}
+
+    for row in seeded.products():
+        lead = suppliers[row["supplier_id"]]
+        during_lead = weekly[row["sku"]] / 7 * lead
+        assert row["reorder_point"] >= during_lead, (
+            f"{row['sku']}: point {row['reorder_point']} does not cover "
+            f"{during_lead:.1f} units sold over a {lead}-day lead time"
+        )
+
+
+def test_piping_into_head_does_not_print_a_traceback(tmp_path):
+    """`inventory valuation | head` closes the pipe early; that must end quietly."""
+    import subprocess
+    import sys
+
+    db = tmp_path / "pipe.db"
+    env = {"PATH": "/usr/bin:/bin", "PYTHONPATH": "src"}
+    subprocess.run([sys.executable, "-m", "inventory", "--db", str(db), "demo"],
+                   check=True, capture_output=True, env=env)
+
+    listing = subprocess.Popen([sys.executable, "-m", "inventory", "--db", str(db), "valuation"],
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+    head = subprocess.Popen(["head", "-2"], stdin=listing.stdout, stdout=subprocess.PIPE)
+    listing.stdout.close()
+    head.communicate()
+    stderr = listing.stderr.read().decode()
+    listing.wait()
+
+    assert "BrokenPipeError" not in stderr, stderr
+    assert "Traceback" not in stderr, stderr

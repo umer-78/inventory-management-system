@@ -95,7 +95,7 @@ def create_app(db: Database | None = None) -> FastAPI:
 
     @app.get("/suppliers", tags=["catalogue"])
     def suppliers() -> list[dict]:
-        return database.query("SELECT * FROM suppliers ORDER BY name")
+        return inv.suppliers()
 
     @app.get("/orders", tags=["purchasing"])
     def orders(status: str | None = None) -> list[dict]:

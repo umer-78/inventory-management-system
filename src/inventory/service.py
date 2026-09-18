@@ -29,6 +29,11 @@ class Inventory:
             (name.strip(), email, phone, lead_time_days))
         return self.db.one("SELECT * FROM suppliers WHERE id = ?", (supplier_id,))
 
+    def suppliers(self) -> list[dict]:
+        """Every supplier, by name. Keeps the SQL in this layer rather than in the
+        HTTP handlers, so there is one place that knows the schema."""
+        return self.db.query("SELECT * FROM suppliers ORDER BY name")
+
     def add_product(self, sku: str, name: str, cost_price: float, sell_price: float, *,
                     category: str = "general", supplier_id: int | None = None,
                     reorder_point: int = 0, reorder_quantity: int = 0) -> dict:

@@ -68,11 +68,38 @@ inventory --db shop.db serve         # http://127.0.0.1:8000/docs
 
 ```text
 $ inventory --db shop.db valuation
-319 units in stock
-  at cost    Rs 936,453
-  at retail  Rs 1,479,650
-  potential profit Rs 543,197
+483 units in stock
+  at cost    Rs 1,092,123
+  at retail  Rs 1,763,600
+  potential profit Rs 671,477
+
+SKU         ON HAND    UNIT COST        VALUE   MARGIN
+HD-512           34     Rs 7,393   Rs 251,358    32.2%
+HD-1TB           20     Rs 9,258   Rs 185,157    31.4%
+MN-24             7    Rs 24,977   Rs 174,836    24.1%
+KB-101           13     Rs 6,406    Rs 83,281    34.6%
+PS-65W           37     Rs 2,126    Rs 78,673    45.5%
+
+$ inventory --db shop.db reorder
+SKU        PRODUCT                         ON HAND  POINT  ORDER         COST  SUPPLIER
+MS-204     Wireless mouse                        2     26     50    Rs 72,500  Karachi Components
+
+1 product to reorder, about Rs 72,500
+
+$ inventory --db shop.db sales --days 30
+last 30 days: 414 units, Rs 1,159,550 revenue, Rs 494,090 gross profit
+  CB-USB       197 units    Rs 167,450
+  CB-HDMI       68 units     Rs 88,400
+  MS-204        56 units    Rs 145,600
+  PS-65W        38 units    Rs 148,200
+  KB-101        20 units    Rs 196,000
 ```
+
+The wireless mouse is the line to act on: it is at 2 against a reorder point of
+26. It got there because a restock is not instant — the demo models each
+supplier's lead time, so an order placed near the end of the period has not
+landed yet. That is precisely the state a buyer opens the reorder report to
+find, and the seed data is built to produce it rather than to look tidy.
 
 ## HTTP API
 
@@ -90,7 +117,7 @@ $ inventory --db shop.db valuation
 
 ```bash
 ruff check .
-python -m pytest -q     # 18 tests
+python -m pytest -q     # 22 tests
 ```
 
 They cover the movement arithmetic, refusing to oversell, stock counts writing a
@@ -98,6 +125,13 @@ correction, SKU normalisation and uniqueness, the full purchase-order state
 machine (including that receiving twice is refused and a bad line rolls the whole
 order back), weighted-average valuation, reorder suggestions, and the API and CLI
 end to end.
+
+Three of them are about the demo data rather than the code, because data that
+does not exercise a feature hides bugs in it: the seeded shop must leave
+something below its reorder point, must never drive a line negative, and every
+reorder point must cover what that line sells during its supplier's lead time.
+A fourth pipes `valuation` into `head` and fails if a `BrokenPipeError` traceback
+reaches stderr.
 
 ## Design notes
 
