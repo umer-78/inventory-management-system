@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inventory Management System — Interactive Demo</title>
+<style>
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --surface-2: #eef0f4; --border: #dde1e8;
+  --text: #16181d; --muted: #5d6573; --accent: #2563eb; --accent-ink: #ffffff;
+  --good: #15803d; --bad: #b91c1c; --radius: 12px;
+  --shadow: 0 1px 2px rgb(16 24 40 / 0.06), 0 4px 16px rgb(16 24 40 / 0.05);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e1116; --surface: #161a21; --surface-2: #1d222b; --border: #2a303b;
+    --text: #e8eaee; --muted: #9aa3b2; --accent: #60a5fa; --accent-ink: #0b1220;
+    --good: #4ade80; --bad: #f87171; --shadow: none; color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+a { color: var(--accent); }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 24px 16px 48px; }
+header { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+header h1 { margin: 0; font-size: 1.7rem; letter-spacing: -0.02em; }
+header p { margin: 4px 0 0; color: var(--muted); max-width: 660px; }
+.gh { font-weight: 600; text-decoration: none; border: 1px solid var(--border); background: var(--surface); padding: 8px 14px; border-radius: var(--radius); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-top: 16px; }
+.card h2 { margin: 0 0 12px; font-size: 1.05rem; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
+.row > div { flex: 1; min-width: 110px; }
+label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 3px; }
+input, select, button { font: inherit; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; width: 100%; }
+button { background: var(--accent); color: var(--accent-ink); border: none; cursor: pointer; font-weight: 600; width: auto; }
+button:hover { filter: brightness(1.08); }
+button.ghost { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+button.danger { background: color-mix(in srgb, var(--bad) 12%, var(--surface)); color: var(--bad); border: 1px solid color-mix(in srgb, var(--bad) 40%, var(--border)); }
+.msg { margin-top: 10px; padding: 9px 12px; border-radius: 8px; font-size: 0.9rem; display: none; }
+.msg.err { display: block; background: color-mix(in srgb, var(--bad) 12%, transparent); color: var(--bad); border: 1px solid color-mix(in srgb, var(--bad) 35%, transparent); }
+.msg.ok { display: block; background: color-mix(in srgb, var(--good) 12%, transparent); color: var(--good); border: 1px solid color-mix(in srgb, var(--good) 35%, transparent); }
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.stat { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.stat .n { font-family: var(--mono); font-size: 1.25rem; font-weight: 700; }
+.stat .l { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.stat.alert .n { color: var(--bad); }
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+td.num, th.num { text-align: right; font-family: var(--mono); }
+tr.low td { background: color-mix(in srgb, var(--bad) 7%, transparent); }
+.badge { display: inline-block; font-size: 0.7rem; padding: 1px 7px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface-2); color: var(--muted); }
+.badge.low { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 45%, var(--border)); }
+.badge.ok { color: var(--good); border-color: color-mix(in srgb, var(--good) 45%, var(--border)); }
+.hint { font-size: 0.82rem; color: var(--muted); }
+.pos { color: var(--good); } .neg { color: var(--bad); }
+footer { margin-top: 32px; text-align: center; color: var(--muted); font-size: 0.85rem; }
+footer a { color: var(--muted); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+@media (max-width: 640px) { .hide-sm { display: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>Inventory Management System</h1>
+    <p>Stock on hand is never stored — it is the sum of every movement. Add products, record receipts and sales, and watch derived stock, reorder alerts and valuation update live.</p>
+  </div>
+  <a class="gh" href="https://github.com/umer-78/inventory-management-system" rel="noopener">View on GitHub</a>
+</header>
+
+<main>
+<section class="grid2">
+  <div class="card" aria-label="Add product">
+    <h2>Add product</h2>
+    <div class="row">
+      <div style="flex:0 0 90px"><label for="pSku">SKU</label><input id="pSku" placeholder="CB-USB" maxlength="16"></div>
+      <div style="flex:2"><label for="pName">Name</label><input id="pName" placeholder="USB-C cable, 2m"></div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <div><label for="pCat">Category</label>
+        <select id="pCat"><option>cables</option><option>peripherals</option><option>storage</option><option>displays</option><option>audio</option><option>power</option><option>network</option><option>general</option></select>
+      </div>
+      <div><label for="pCost">Unit cost (Rs)</label><input id="pCost" type="number" min="0" step="1" value="320"></div>
+      <div><label for="pSell">Sell price (Rs)</label><input id="pSell" type="number" min="0" step="1" value="850"></div>
+      <div><label for="pPoint">Reorder point</label><input id="pPoint" type="number" min="0" step="1" value="14"></div>
+      <div><label for="pQty">Reorder qty</label><input id="pQty" type="number" min="0" step="1" value="50"></div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <button id="btnAddProduct" type="button">Add product</button>
+      <button class="ghost" id="btnSeed" type="button">Load demo shop</button>
+    </div>
+    <div class="msg" id="prodMsg" role="status"></div>
+  </div>
+
+  <div class="card" aria-label="Record movement">
+    <h2>Record movement</h2>
+    <div class="row">
+      <div style="flex:2"><label for="mSku">Product</label><select id="mSku"></select></div>
+      <div><label for="mReason">Reason</label>
+        <select id="mReason">
+          <option value="purchase">purchase (in)</option>
+          <option value="sale">sale (out)</option>
+          <option value="return">return (in)</option>
+          <option value="damage">damage (out)</option>
+          <option value="adjustment">adjustment</option>
+        </select>
+      </div>
+      <div><label for="mQty">Quantity</label><input id="mQty" type="number" step="1" value="10"></div>
+      <div><label for="mCost">Unit cost</label><input id="mCost" type="number" min="0" step="1" value="320"></div>
+      <div><label for="mRef">Reference</label><input id="mRef" placeholder="INV-2291"></div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <button id="btnMove" type="button">Record</button>
+      <button class="ghost" id="btnCount" type="button">Stock count…</button>
+    </div>
+    <p class="hint" style="margin-top:8px">Issuing more than you hold is refused (409) — the ledger never goes negative. A stock count writes the difference as a visible adjustment instead of editing the number.</p>
+    <div class="msg" id="moveMsg" role="status"></div>
+  </div>
+</section>
+
+<section class="card" aria-label="Stock on hand">
+  <h2>Stock on hand <span class="hint">— derived as SUM(movements)</span></h2>
+  <div class="stats" id="summary"></div>
+  <div style="overflow-x:auto">
+    <table id="stockTable">
+      <caption class="sr">Products with derived stock, valuation and reorder status</caption>
+      <thead><tr>
+        <th>SKU</th><th>Product</th><th class="hide-sm">Category</th>
+        <th class="num">On hand</th><th class="num hide-sm">Reorder</th>
+        <th class="num">Unit cost</th><th class="num">Value</th><th class="num">Retail</th><th>Status</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="grid2" style="margin-top:16px">
+  <div class="card" aria-label="Reorder report">
+    <h2>Reorder report</h2>
+    <div id="reorder"></div>
+  </div>
+  <div class="card" aria-label="Movement ledger">
+    <h2>Ledger — newest first</h2>
+    <div style="max-height:320px;overflow:auto">
+      <table id="ledger">
+        <caption class="sr">Stock movements</caption>
+        <thead><tr><th>When</th><th>SKU</th><th class="num">Qty</th><th>Reason</th><th class="hide-sm">Ref</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <p>22 tests passing · <a href="https://github.com/umer-78">github.com/umer-78</a></p>
+</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  const $ = id => document.getElementById(id);
+
+  // stock is NEVER stored: onHand = SUM(movements.quantity)
+  let products = []; // {id, sku, name, category, cost_price, sell_price, reorder_point, reorder_quantity, active}
+  let movements = []; // {id, product_id, quantity, reason, unit_cost, reference, note, created_at}
+  let nextProductId = 1, nextMovementId = 1;
+
+  function onHand(productId) {
+    return movements.filter(m => m.product_id === productId).reduce((s, m) => s + m.quantity, 0);
+  }
+
+  function addProduct(sku, name, cost, sell, category, point, qty) {
+    sku = sku.trim().toUpperCase();
+    if (!sku) throw new Error("SKU is required");
+    if (products.some(p => p.sku === sku)) throw new Error("SKU " + sku + " already exists");
+    if (cost < 0 || sell < 0) throw new Error("prices cannot be negative");
+    const p = {
+      id: nextProductId++, sku, name: name.trim() || sku, category: category || "general",
+      cost_price: Number(cost), sell_price: Number(sell),
+      reorder_point: Number(point) || 0, reorder_quantity: Number(qty) || 0, active: true
+    };
+    products.push(p);
+    return p;
+  }
+
+  function move(productId, quantity, reason, unitCost, reference, note) {
+    const p = products.find(x => x.id === productId);
+    if (!p) throw { status: 404, message: "product not found" };
+    quantity = Number(quantity);
+    if (!quantity) throw new Error("a movement of zero is not a movement");
+    if (quantity < 0) {
+      const available = onHand(productId);
+      if (available + quantity < 0) {
+        throw { status: 409, message: p.sku + ": asked for " + (-quantity) + ", only " + available + " on hand" };
+      }
+    }
+    movements.push({
+      id: nextMovementId++, product_id: productId, quantity, reason,
+      unit_cost: unitCost != null ? Number(unitCost) : null,
+      reference: reference || "", note: note || "", created_at: new Date()
+    });
+  }
+
+  function adjust(productId, counted, note) {
+    const diff = counted - onHand(productId);
+    if (diff === 0) return null;
+    move(productId, diff, "adjustment", null, "", note || "stock count");
+    return diff;
+  }
+
+  // weighted average of what was actually paid on purchases
+  function averageCost(p) {
+    const purchases = movements.filter(m => m.product_id === p.id && m.reason === "purchase" && m.unit_cost != null);
+    const qty = purchases.reduce((s, m) => s + m.quantity, 0);
+    if (qty > 0) return purchases.reduce((s, m) => s + m.quantity * m.unit_cost, 0) / qty;
+    return p.cost_price;
+  }
+
+  function valuation() {
+    const items = products.filter(p => p.active).map(p => {
+      const hand = onHand(p.id);
+      const unitCost = averageCost(p);
+      return {
+        sku: p.sku, name: p.name, category: p.category, on_hand: hand,
+        unit_cost: Math.round(unitCost * 100) / 100,
+        value_at_cost: Math.round(hand * unitCost * 100) / 100,
+        value_at_retail: Math.round(hand * p.sell_price * 100) / 100,
+        margin_percent: p.sell_price ? Math.round(100 * (p.sell_price - unitCost) / p.sell_price * 10) / 10 : 0,
+        reorder_point: p.reorder_point, reorder_quantity: p.reorder_quantity,
+        cost_price: p.cost_price, product_id: p.id
+      };
+    });
+    return {
+      items,
+      total_units: items.reduce((s, i) => s + i.on_hand, 0),
+      total_at_cost: Math.round(items.reduce((s, i) => s + i.value_at_cost, 0) * 100) / 100,
+      total_at_retail: Math.round(items.reduce((s, i) => s + i.value_at_retail, 0) * 100) / 100
+    };
+  }
+
+  function suggestReorder() {
+    return valuation().items
+      .filter(i => i.on_hand <= i.reorder_point)
+      .sort((a, b) => (a.on_hand - a.reorder_point) - (b.on_hand - b.reorder_point))
+      .map(i => ({
+        ...i,
+        suggested_quantity: Math.max(i.reorder_quantity, i.reorder_point - i.on_hand),
+        estimated_cost: Math.round(Math.max(i.reorder_quantity, i.reorder_point - i.on_hand) * i.cost_price * 100) / 100
+      }));
+  }
+
+  function msg(id, text, ok) {
+    const el = $(id);
+    el.textContent = text;
+    el.className = "msg " + (ok ? "ok" : "err");
+    if (ok) setTimeout(() => el.className = "msg", 4000);
+  }
+
+  function fmtMoney(n) {
+    return "Rs " + Math.round(n).toLocaleString("en-PK");
+  }
+
+  function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+  function render() {
+    const v = valuation();
+    const lowCount = v.items.filter(i => i.on_hand <= i.reorder_point).length;
+    $("summary").innerHTML =
+      '<div class="stat"><div class="n">' + v.items.length + '</div><div class="l">products</div></div>' +
+      '<div class="stat"><div class="n">' + v.total_units + '</div><div class="l">units in stock</div></div>' +
+      '<div class="stat"><div class="n">' + fmtMoney(v.total_at_cost) + '</div><div class="l">value at cost</div></div>' +
+      '<div class="stat"><div class="n">' + fmtMoney(v.total_at_retail) + '</div><div class="l">value at retail</div></div>' +
+      '<div class="stat' + (lowCount ? " alert" : "") + '"><div class="n">' + lowCount + '</div><div class="l">need reorder</div></div>';
+
+    const tbody = $("stockTable").querySelector("tbody");
+    tbody.innerHTML = v.items.sort((a, b) => a.sku.localeCompare(b.sku)).map(i => {
+      const low = i.on_hand <= i.reorder_point;
+      return '<tr class="' + (low ? "low" : "") + '">' +
+        "<td><strong>" + esc(i.sku) + "</strong></td>" +
+        "<td>" + esc(i.name) + "</td>" +
+        '<td class="hide-sm">' + esc(i.category) + "</td>" +
+        '<td class="num">' + i.on_hand + "</td>" +
+        '<td class="num hide-sm">' + i.reorder_point + "</td>" +
+        '<td class="num">' + fmtMoney(i.unit_cost) + "</td>" +
+        '<td class="num">' + fmtMoney(i.value_at_cost) + "</td>" +
+        '<td class="num hide-sm">' + fmtMoney(i.value_at_retail) + "</td>" +
+        "<td>" + (low ? '<span class="badge low">reorder</span>' : '<span class="badge ok">ok</span>') + "</td></tr>";
+    }).join("");
+
+    const reorder = suggestReorder();
+    if (!reorder.length) {
+      $("reorder").innerHTML = '<p class="hint">Everything is above its reorder point.</p>';
+    } else {
+      $("reorder").innerHTML =
+        '<table><thead><tr><th>SKU</th><th class="num">On hand</th><th class="num">Point</th><th class="num">Order</th><th class="num">Cost</th></tr></thead><tbody>' +
+        reorder.map(r =>
+          "<tr><td>" + esc(r.sku) + '</td><td class="num">' + r.on_hand + '</td><td class="num">' + r.reorder_point +
+          '</td><td class="num">' + r.suggested_quantity + '</td><td class="num">' + fmtMoney(r.estimated_cost) + "</td></tr>"
+        ).join("") +
+        '</tbody></table><p class="hint" style="margin-top:8px">' + reorder.length +
+        " product(s) to reorder, about " + fmtMoney(reorder.reduce((s, r) => s + r.estimated_cost, 0)) + "</p>";
+    }
+
+    const led = $("ledger").querySelector("tbody");
+    led.innerHTML = movements.slice().reverse().slice(0, 50).map(m => {
+      const p = products.find(x => x.id === m.product_id);
+      return "<tr><td>" + m.created_at.toISOString().slice(0, 16).replace("T", " ") + "</td>" +
+        "<td>" + esc(p ? p.sku : "?") + '</td><td class="num ' + (m.quantity > 0 ? "pos" : "neg") + '">' +
+        (m.quantity > 0 ? "+" : "") + m.quantity + "</td><td>" + esc(m.reason) +
+        '</td><td class="hide-sm">' + esc(m.reference || "") + "</td></tr>";
+    }).join("");
+
+    // refresh product select
+    const sel = $("mSku");
+    const prev = sel.value;
+    sel.innerHTML = products.map(p => '<option value="' + p.id + '">' + esc(p.sku) + " · " + esc(p.name) + " (" + onHand(p.id) + ")</option>").join("");
+    if (prev) sel.value = prev;
+  }
+
+  function seed() {
+    products = []; movements = [];
+    nextProductId = 1; nextMovementId = 1;
+    const seedRows = [
+      ["KB-101", "Mechanical keyboard, 87 keys", "peripherals", 6200, 9800, 12, 25, 40],
+      ["MS-204", "Wireless mouse", "peripherals", 1450, 2600, 26, 50, 80],
+      ["HD-512", "512GB NVMe SSD", "storage", 7300, 10900, 16, 25, 42],
+      ["HD-1TB", "1TB portable drive", "storage", 9100, 13500, 8, 15, 24],
+      ["MN-24", '24" IPS monitor', "displays", 24500, 32900, 3, 6, 8],
+      ["CB-USB", "USB-C cable, 2m", "cables", 320, 850, 140, 250, 380],
+      ["CB-HDMI", "HDMI 2.1 cable, 1.5m", "cables", 540, 1300, 70, 150, 210],
+      ["HS-300", "Over-ear headset", "audio", 4100, 6900, 6, 15, 20],
+      ["PS-65W", "65W GaN charger", "power", 2100, 3900, 28, 50, 76],
+      ["RT-AX", "Wi-Fi 6 router", "network", 11800, 16900, 3, 6, 8]
+    ];
+    for (const [sku, name, cat, cost, sell, point, qty, opening] of seedRows) {
+      const p = addProduct(sku, name, cost, sell, cat, point, qty);
+      move(p.id, opening, "purchase", cost, "opening stock");
+    }
+    // a few sales so reorder is exercised: drive MS-204 low
+    const mouse = products.find(p => p.sku === "MS-204");
+    move(mouse.id, -78, "sale", null, "INV-2291");
+    const hd = products.find(p => p.sku === "HD-1TB");
+    move(hd.id, -9, "sale", null, "INV-2292");
+    move(products.find(p => p.sku === "CB-USB").id, -12, "sale", null, "INV-2293");
+    msg("prodMsg", "Loaded demo shop: 10 products with opening stock and sales.", true);
+    render();
+  }
+
+  $("btnAddProduct").addEventListener("click", () => {
+    try {
+      const p = addProduct($("pSku").value, $("pName").value, $("pCost").value, $("pSell").value,
+        $("pCat").value, $("pPoint").value, $("pQty").value);
+      render();
+      msg("prodMsg", "Added " + p.sku + " (" + p.id + ").", true);
+      $("pSku").value = ""; $("pName").value = "";
+    } catch (e) { msg("prodMsg", e.message || String(e), false); }
+  });
+
+  $("btnMove").addEventListener("click", () => {
+    try {
+      const productId = Number($("mSku").value);
+      const reason = $("mReason").value;
+      let qty = Number($("mQty").value);
+      if (!qty) throw new Error("quantity must be non-zero");
+      // reasons that leave the warehouse are signed negative unless user already typed negative
+      if (["sale", "damage"].includes(reason) && qty > 0) qty = -qty;
+      if (["purchase", "return"].includes(reason) && qty < 0) qty = -qty;
+      const cost = reason === "purchase" ? Number($("mCost").value) : null;
+      move(productId, qty, reason, cost, $("mRef").value, "");
+      render();
+      const p = products.find(x => x.id === productId);
+      msg("moveMsg", "Recorded " + (qty > 0 ? "+" : "") + qty + " " + reason + " for " + p.sku +
+        " — on hand now " + onHand(productId) + ".", true);
+    } catch (e) { msg("moveMsg", (e.status ? e.status + ": " : "") + (e.message || String(e)), false); }
+  });
+
+  $("btnCount").addEventListener("click", () => {
+    const productId = Number($("mSku").value);
+    const p = products.find(x => x.id === productId);
+    if (!p) return;
+    const input = prompt("Physical count for " + p.sku + " (book says " + onHand(productId) + "):",
+      String(onHand(productId)));
+    if (input == null) return;
+    const counted = Number(input);
+    if (!Number.isInteger(counted) || counted < 0) { msg("moveMsg", "count must be a non-negative integer", false); return; }
+    try {
+      const diff = adjust(productId, counted, "stock count");
+      render();
+      if (diff == null) msg("moveMsg", "Count matches book — no adjustment needed.", true);
+      else msg("moveMsg", "Adjustment of " + (diff > 0 ? "+" : "") + diff + " written for " + p.sku + ".", true);
+    } catch (e) { msg("moveMsg", e.message || String(e), false); }
+  });
+
+  $("btnSeed").addEventListener("click", seed);
+
+  seed();
+})();
+</script>
+</body>
+</html>
