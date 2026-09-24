@@ -190,9 +190,20 @@ footer a:hover { color: var(--accent); }
 @keyframes fadeDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes slideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
 @media (max-width: 640px) { .hide-sm { display: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
 <div class="wrap">
 <header class="top">
   <div class="brand">
@@ -207,7 +218,7 @@ footer a:hover { color: var(--accent); }
   </div>
 </header>
 
-<main>
+<main id="main">
 <section class="grid2">
   <div class="card" aria-label="Add product">
     <h2><span class="section-num">01</span> Add product</h2>
