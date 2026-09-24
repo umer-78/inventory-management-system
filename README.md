@@ -1,5 +1,7 @@
 # Inventory Management System
 
+**Live demo:** https://umer-78.github.io/inventory-management-system/
+
 [![CI](https://github.com/umer-78/inventory-management-system/actions/workflows/ci.yml/badge.svg)](https://github.com/umer-78/inventory-management-system/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688)
