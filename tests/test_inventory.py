@@ -183,6 +183,8 @@ def test_api(shop):
     inv, supplier, product = shop
     client = TestClient(create_app(inv.db))
     assert client.get("/health").json()["status"] == "ok"
+    home = client.get("/", follow_redirects=False)
+    assert home.status_code == 307 and home.headers["location"] == "/docs"
 
     created = client.post("/products", json={"sku": "api-1", "name": "From the API",
                                              "cost_price": 50, "sell_price": 90})

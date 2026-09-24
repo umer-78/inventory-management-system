@@ -54,6 +54,12 @@ def create_app(db: Database | None = None) -> FastAPI:
     def _not_found(request, exc: NotFound):  # noqa: ANN001
         raise HTTPException(status_code=404, detail=str(exc))
 
+    @app.get("/", include_in_schema=False)
+    def root():
+        from fastapi.responses import RedirectResponse
+
+        return RedirectResponse("/docs")
+
     @app.get("/health", tags=["ops"])
     def health() -> dict:
         return {"status": "ok", "products": len(inv.products())}
