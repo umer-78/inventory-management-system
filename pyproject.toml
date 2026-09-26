@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "inventory"
+name = "inventory-management-system"
 version = "1.0.0"
-description = "Inventory and stock control: products, suppliers, purchase orders, stock movements, valuation and reorder alerts."
+description = "Stock control with a movement-ledger design: products, suppliers, purchase orders, valuation, reorder alerts and dead-stock reports. CLI + FastAPI."
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "Umer Hashmi" }]
