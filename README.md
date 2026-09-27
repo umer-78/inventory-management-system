@@ -3,6 +3,8 @@
 **Live demo:** https://umer-78.github.io/inventory-management-system/
 
 [![CI](https://github.com/umer-78/inventory-management-system/actions/workflows/ci.yml/badge.svg)](https://github.com/umer-78/inventory-management-system/actions/workflows/ci.yml)
+
+[![Inventory Management: the live demo](.github/preview.jpg)](https://umer-78.github.io/inventory-management-system/)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688)
 ![SQLite](https://img.shields.io/badge/SQLite-ledger%20model-003b57)
