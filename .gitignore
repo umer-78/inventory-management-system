@@ -12,3 +12,6 @@ build/
 *.db
 *.db-wal
 *.db-shm
+
+# AI tool config
+.mcp.json
