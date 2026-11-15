@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-scene="data" data-fx-compact="">
+<html lang="en" data-scene="warehouse" data-fx-compact="" data-look="shoulders" data-hero="band" data-card="solid" data-motif="grid" data-backdrop="grid">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,8 +10,8 @@
 <meta property="og:url" content="https://umer-78.github.io/inventory-management-system/">
 <meta name="twitter:card" content="summary">
 <meta name="description" content="Derived-stock inventory system: movements ledger, reorder alerts and live valuation.">
-<meta name="theme-color" content="#2563eb" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0a0c10" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#098555" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#07120c" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%232563eb'/><stop offset='1' stop-color='%237c3aed'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='url(%23g)'/><text x='16' y='22' font-size='16' text-anchor='middle' fill='white' font-family='system-ui' font-weight='bold'>I</text></svg>">
 <style>
 :root {
@@ -230,7 +230,7 @@ html.mk-pre header.top, html.mk-pre main section, html.mk-pre section.card, html
 <script>(function(){try{if(!(matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){var r=document.documentElement;r.classList.add('mk-pre');setTimeout(function(){r.classList.remove('mk-pre')},2200)}}catch(e){}})();</script>
 <!-- /motion-kit:head -->
 <!-- fx:v2 -->
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Barlow:wght@400;500;600&family=Roboto+Mono:wght@400;600&display=swap" id="fx-fonts">
 <link rel="stylesheet" href="fx.css">
 <style>:root { --fx-2: #06b6d4; --fx-3: #f59e0b; }</style>
 <!-- /fx:v2 -->
@@ -244,6 +244,11 @@ html.mk-pre header.top, html.mk-pre main section, html.mk-pre section.card, html
 <meta property="og:image:alt" content="Inventory Management System — Interactive Demo: the live demo">
 <meta name="twitter:card" content="summary_large_image">
 <!-- /og -->
+<style id="fx-look">:root[data-look] { --font: 'Barlow', system-ui, -apple-system, "Segoe UI", sans-serif; --fx-display: 'Big Shoulders Display', system-ui, sans-serif; --mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; --fx-display-weight: 800; --fx-tracking: 0.01em; --fx-title-case: uppercase; --fx-radius: 8px; --fx-hero-radius: 18px; --fx-control-radius: 6px; --accent: #098555; --accent-hover: #097148; --accent-soft: #e2f8eb; --accent-glow: rgb(9 133 85 / 0.16); --on-accent: #ffffff; --fx-2: #d16022; --fx-3: #ed793f; --bg: #f3fcf6; --bg-elevated: #fbfefc; --surface: #fcfffd; --surface-2: #ecf7f0; --surface-3: #e3efe7; --border: #d5e2da; --border-strong: #bac8bf; --line: #d5e2da; }
+@media (prefers-color-scheme: dark) { :root[data-look]:not([data-theme="light"]) { --accent: #30b278; --accent-hover: #5ac38e; --accent-soft: rgb(48 178 120 / 0.14); --accent-glow: rgb(48 178 120 / 0.2); --on-accent: #05160d; --fx-2: #f99262; --fx-3: #fca57e; --bg: #07120c; --bg-elevated: #0d1912; --surface: #0f1d15; --surface-2: #18251d; --surface-3: #212f27; --border: #28342d; --border-strong: #3a463e; --line: #28342d; } }
+:root[data-look][data-theme="dark"] { --accent: #30b278; --accent-hover: #5ac38e; --accent-soft: rgb(48 178 120 / 0.14); --accent-glow: rgb(48 178 120 / 0.2); --on-accent: #05160d; --fx-2: #f99262; --fx-3: #fca57e; --bg: #07120c; --bg-elevated: #0d1912; --surface: #0f1d15; --surface-2: #18251d; --surface-3: #212f27; --border: #28342d; --border-strong: #3a463e; --line: #28342d; }</style>
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.min.js" data-fx>
+<link rel="modulepreload" href="fx3d.js" data-fx>
 </head>
 <body>
   <noscript><p style="margin:16px;padding:12px 16px;border-radius:8px;background:#fff7ed;color:#9a3412;border:1px solid #fdba74;font-family:system-ui,sans-serif">This interactive demo requires JavaScript. Please enable it to run the demo in your browser.</p></noscript>
